@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 06/20/2025 07:42:39 PAGE 1   
+C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 07/31/2025 16:53:54 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE REVISEDAQUASHIELD
@@ -19,350 +19,514 @@ line level    source
    9          sbit R3 = P3^4;
   10          
   11          //DC motor control bits
-  12          
-  13          sbit clock = P2^3;
-  14          sbit anticlock = P2^4;
-  15          
-  16          // LCD control bits
-  17          sbit RS = P2^0;
-  18          sbit RW = P2^1;
-  19          sbit EN = P2^2;
-  20          
-  21          // Rain condition bits
-  22          sbit rain_condition = P3^7;
+  12          sbit clock = P2^3;
+  13          sbit anticlock = P2^4;
+  14          
+  15          // PWM variables for motor speed control
+  16          unsigned char pwm_duty_cycle = 25; // 25% duty cycle for very gentle operation (reduced from 45%)
+  17          unsigned char pwm_counter = 0;
+  18          
+  19          // LCD control bits
+  20          sbit RS = P2^0;
+  21          sbit RW = P2^1;
+  22          sbit EN = P2^2;
   23          
-  24          // Debug pin
-  25          sbit DebugPin = P3^5;
+  24          // Rain condition bits
+  25          sbit rain_condition = P3^7;
   26          
-  27          // GSM Initialization
-  28          void sim_init();
-  29          void tx(unsigned char send);
-  30          void tx_string(unsigned char *s);
-  31          void sms(unsigned char *num1, unsigned char *msg);
-  32          void delay(unsigned int ms);
-  33          
-  34          // LCD Initialization
-  35          void LCD_cmd(unsigned char command);
-  36          void LCD_data_write(unsigned char dataa);
-  37          void LCD_init(void);
-  38          void LCD_off(void);
-  39          void LCD_string_write(unsigned char *string);
-  40          
-  41          //Motor Initialization
-  42          void motor_clockwise(void);
-  43          void motor_anticlockwise(void);
-  44            
-  45          // Idle Mode Initialization
-  46          void initTimer0(void);
-  47          void enterIdleMode(void);
-  48          
-  49          // Timer variable
-  50          unsigned long timer_count_60sec = 0;
-  51          
-  52          // Add a flag for timer completion
-  53          bit timer_complete = 0;
-  54          bit timer_running = 0;  // New flag to track timer status
-C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 06/20/2025 07:42:39 PAGE 2   
+  27          // Debug pin
+  28          sbit DebugPin = P3^5;
+  29          
+  30          // GSM Initialization
+  31          void sim_init();
+  32          void tx(unsigned char send);
+  33          void tx_string(unsigned char *s);
+  34          void sms(unsigned char *num1, unsigned char *msg);
+  35          void delay(unsigned int ms);
+  36          
+  37          // LCD Initialization
+  38          void LCD_cmd(unsigned char command);
+  39          void LCD_data_write(unsigned char dataa);
+  40          void LCD_init(void);
+  41          void LCD_off(void);
+  42          void LCD_string_write(unsigned char *string);
+  43          
+  44          //Motor Initialization
+  45          void motor_clockwise(void);
+  46          void motor_anticlockwise(void);
+  47          void motor_stop(void);
+  48          void motor_pwm_clockwise(unsigned int duration_ms);
+  49          void motor_pwm_anticlockwise(unsigned int duration_ms);
+  50          void pwm_delay(void);
+  51          void set_motor_speed(unsigned char speed_percent);
+  52          void motor_gradual_start_stop(unsigned char direction, unsigned int duration_ms);
+  53            
+  54          // Idle Mode Initialization
+C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 07/31/2025 16:53:54 PAGE 2   
 
-  55          
-  56          // Timer Module
-  57          void timer0_isr(void) interrupt 1
-  58          {
-  59   1          TF0 = 0;        // Clear timer flag
-  60   1          
-  61   1          // Reload timer values for 50ms interval at 11.0592MHz
-  62   1          TH0 = 0x4B;
-  63   1          TL0 = 0xFE;
-  64   1          DebugPin = !DebugPin;
-  65   1      
-  66   1          
-  67   1          timer_count_60sec++;
-  68   1          if (timer_count_60sec >= 40) { // 50ms * 1200 = 60 seconds
-  69   2              timer_complete = 1;  // Set flag when timer completes
-  70   2              timer_running = 0;   // Update timer status
-  71   2              TR0 = 0;             // Stop timer
-  72   2              timer_count_60sec = 0;
-  73   2          }
-  74   1      }
-  75          
-  76          
-  77          //Motor control functions
-  78          void motor_clockwise(void)
-  79          {
-  80   1          clock = 1;
-  81   1          anticlock = 0;
-  82   1      }
-  83          
-  84          void motor_anticlockwise(void)
-  85          {
-  86   1          clock = 0;
-  87   1          anticlock = 1;
-  88   1      }
-  89          
-  90          void motor_stop(void)
-  91          {
-  92   1          clock = 0;
-  93   1          anticlock = 0;
-  94   1      }
-  95          
-  96          void initTimer0(void)
-  97          {
-  98   1          // Initialize Timer0 for 50ms intervals
-  99   1          TMOD = (TMOD & 0xF0) | 0x01;  // Preserve Timer1 settings, set Timer0 to mode 1
- 100   1          TH0 = 0x4B;     // Initial value for 50ms at 11.0592MHz
- 101   1          TL0 = 0xFE;
- 102   1          ET0 = 1;        // Enable Timer0interrupt
- 103   1          timer_count_60sec = 0;
- 104   1          timer_complete = 0;     // Reset the timer completion flag
- 105   1          timer_running = 1;      // Set timer running flag
- 106   1          TR0 = 1;        // Start timer
- 107   1      }
- 108          
- 109          void enterIdleMode(void)
- 110          {
- 111   1          // Ensure interrupts are enabled before entering idle mode
- 112   1          EA = 1;
- 113   1          if (timer_running) {
- 114   2              PCON |= 0x01;   // Enter idle mode only if timer is running
- 115   2              // After this instruction, CPU operation is suspended until aninterrupt
- 116   2              // When a timerinterrupt occurs, CPU wakes up and execution continues
-C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 06/20/2025 07:42:39 PAGE 3   
+  55          void initTimer0(void);
+  56          void enterIdleMode(void);
+  57          
+  58          // Timer variable
+  59          unsigned long timer_count_60sec = 0;
+  60          
+  61          // Add a flag for timer completion
+  62          bit timer_complete = 0;
+  63          bit timer_running = 0;  // New flag to track timer status
+  64          
+  65          // Timer Module
+  66          void timer0_isr(void) interrupt 1
+  67          {
+  68   1          TF0 = 0;        // Clear timer flag
+  69   1          
+  70   1          // Reload timer values for 50ms interval at 11.0592MHz
+  71   1          TH0 = 0x4B;
+  72   1          TL0 = 0xFE;
+  73   1          DebugPin = !DebugPin;
+  74   1      
+  75   1          
+  76   1          timer_count_60sec++;
+  77   1          if (timer_count_60sec >= 40) { // 50ms * 1200 = 60 seconds
+  78   2              timer_complete = 1;  // Set flag when timer completes
+  79   2              timer_running = 0;   // Update timer status
+  80   2              TR0 = 0;             // Stop timer
+  81   2              timer_count_60sec = 0;
+  82   2          }
+  83   1      }
+  84          
+  85          
+  86          //Motor control functions
+  87          void motor_clockwise(void)
+  88          {
+  89   1          clock = 1;
+  90   1          anticlock = 0;
+  91   1      }
+  92          
+  93          void motor_anticlockwise(void)
+  94          {
+  95   1          clock = 0;
+  96   1          anticlock = 1;
+  97   1      }
+  98          
+  99          void motor_stop(void)
+ 100          {
+ 101   1          clock = 0;
+ 102   1          anticlock = 0;
+ 103   1      }
+ 104          
+ 105          // PWM delay function for motor speed control
+ 106          void pwm_delay(void)
+ 107          {
+ 108   1          unsigned char i;
+ 109   1          for(i = 0; i < 35; i++); // Increased delay for slower PWM timing (~35μs per cycle, was 20μs)
+ 110   1      }
+ 111          
+ 112          // PWM motor control functions
+ 113          // PWM Implementation:
+ 114          // - Creates variable speed control by switching motor ON/OFF rapidly
+ 115          // - Duty cycle determines average power delivered to motor
+ 116          // - Lower duty cycle = slower speed, gentler operation
+C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 07/31/2025 16:53:54 PAGE 3   
 
- 117   2              // from the next instruction after this function call
- 118   2          }
- 119   1      }
- 120          
- 121          void main()
- 122          {
- 123   1          // Initialize global interrupts
- 124   1          EA = 1;
- 125   1          
- 126   1          // Initialize motor pins
- 127   1          clock = 0;
- 128   1          anticlock = 0;
- 129   1          
- 130   1          // Initial LCD display
- 131   1          LCD_init();
- 132   1          LCD_cmd(0x80);  // First line
- 133   1          LCD_string_write("System Ready");
- 134   1          delay(50);
- 135   1          LCD_cmd(0x01);
- 136   1          LCD_off();
- 137   1          
- 138   1          while(1) {
- 139   2              if (rain_condition == 1) {  // It's not raining
- 140   3                  
- 141   3                  // Check rain sensors - more lenient detection (any sensor triggers)
- 142   3                  if (R1 == 0 || R2 == 0 || R3 == 0) {
- 143   4                      // Rain is detected
- 144   4                      rain_condition = 0;
- 145   4                      
- 146   4                      LCD_init();
- 147   4                      
- 148   4                      LCD_cmd(0x80);  // First line
- 149   4                      LCD_string_write("Rain Detected!");
- 150   4                      delay(50);
- 151   4                      LCD_cmd(0x01);  // Clear display
- 152   4                      LCD_off();
- 153   4      
- 154   4                      // Retrieve clothes (rotate clockwise)
- 155   4                      motor_clockwise();
- 156   4                      delay(100);  // Run motor for 5 seconds - increased for visibility
- 157   4                      motor_stop();
- 158   4      
- 159   4                      sim_init();
- 160   4                      sms(NUMBER, "Clothes Retrieved");
- 161   4                      
- 162   4                      // LCD Module
- 163   4                      LCD_init();
- 164   4                      LCD_cmd(0xC0);  // Second line
- 165   4                      LCD_string_write("Clothes Retrieved");
- 166   4                      delay(50);
- 167   4                      LCD_cmd(0x01);  // Clear display
- 168   4                      LCD_off();
- 169   4                  } else {
- 170   4                      LCD_off();
- 171   4                  }
- 172   3                  
- 173   3                  // Start 60-second timer and enter idle mode
- 174   3                  initTimer0();
- 175   3                  
- 176   3                  while (!timer_complete) {
- 177   4                      enterIdleMode();  // System enters low-power mode here
- 178   4                      
-C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 06/20/2025 07:42:39 PAGE 4   
+ 117          // - Prevents sudden jerks that could damage clothes
+ 118          void motor_pwm_clockwise(unsigned int duration_ms)
+ 119          {
+ 120   1          unsigned int cycle_count;
+ 121   1          unsigned int total_cycles = duration_ms / 2; // Each PWM cycle takes ~2ms
+ 122   1          unsigned char on_time;
+ 123   1          unsigned char off_time;
+ 124   1          
+ 125   1          for(cycle_count = 0; cycle_count < total_cycles; cycle_count++)
+ 126   1          {
+ 127   2              // PWM ON period (duty cycle)
+ 128   2              clock = 1;
+ 129   2              anticlock = 0;
+ 130   2                
+ 131   2              // ON time based on duty cycle
+ 132   2              for(on_time = 0; on_time < pwm_duty_cycle; on_time++)
+ 133   2              {
+ 134   3                  pwm_delay();
+ 135   3              }
+ 136   2              
+ 137   2              // PWM OFF period
+ 138   2              clock = 0;
+ 139   2              anticlock = 0;
+ 140   2              
+ 141   2              // OFF time (100 - duty_cycle)
+ 142   2              for(off_time = 0; off_time < (100 - pwm_duty_cycle); off_time++)
+ 143   2              {
+ 144   3                  pwm_delay();
+ 145   3              }
+ 146   2          }
+ 147   1          
+ 148   1          // Ensure motor is stopped after PWM
+ 149   1          motor_stop();
+ 150   1      }
+ 151          
+ 152          void motor_pwm_anticlockwise(unsigned int duration_ms)
+ 153          {
+ 154   1          unsigned int cycle_count;
+ 155   1          unsigned int total_cycles = duration_ms / 2; // Each PWM cycle takes ~2ms
+ 156   1          unsigned char on_time;
+ 157   1          unsigned char off_time;
+ 158   1          
+ 159   1          for(cycle_count = 0; cycle_count < total_cycles; cycle_count++)
+ 160   1          {
+ 161   2              // PWM ON period (duty cycle)
+ 162   2              clock = 0;
+ 163   2              anticlock = 1;
+ 164   2              
+ 165   2              // ON time based on duty cycle
+ 166   2              for(on_time = 0; on_time < pwm_duty_cycle; on_time++)
+ 167   2              {
+ 168   3                  pwm_delay();
+ 169   3              }
+ 170   2              
+ 171   2              // PWM OFF period
+ 172   2              clock = 0;
+ 173   2              anticlock = 0;
+ 174   2              
+ 175   2              // OFF time (100 - duty_cycle)
+ 176   2              for(off_time = 0; off_time < (100 - pwm_duty_cycle); off_time++)
+ 177   2              {
+ 178   3                  pwm_delay();
+C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 07/31/2025 16:53:54 PAGE 4   
 
- 179   4                      // ? EXECUTION PAUSES HERE UNTIL AN INTERRUPT OCCURS ?
- 180   4                      
- 181   4                      // When Timer0 generates aninterrupt (every 50ms):
- 182   4                      // 1. The CPU wakes up and executes timer0_isr()
- 183   4                      // 2. After the ISR completes, execution CONTINUES FROM HERE
- 184   4                      
- 185   4                      // Loop returns to enterIdleMode() and CPU sleeps again
- 186   4                  }
- 187   3                  
- 188   3                  // Display timer complete
- 189   3                  if (timer_complete) {
- 190   4                    LCD_init();
- 191   4                    LCD_cmd(0x01);  // Clear display
- 192   4                    LCD_cmd(0x80);
- 193   4                    LCD_string_write("Timer Complete!");
- 194   4                    delay(10);
- 195   4                    LCD_cmd(0x01);  // Clear display
- 196   4                    LCD_off();
- 197   4                  }
- 198   3                  
- 199   3                  
- 200   3              } else {  // It's raining
- 201   3                  
- 202   3                  
- 203   3                  // Check rain sensors after timer completes
- 204   3                  if (R1 == 1 && R2 == 1 && R3 == 1) {
- 205   4                      // No rain detected
- 206   4                      rain_condition = 1; // It's not raining now
- 207   4      
- 208   4                      // Release clothes (rotate anti-clockwise)
- 209   4                      motor_anticlockwise();
- 210   4                      delay(100);  // Run motor for some time
- 211   4                      motor_stop();
- 212   4      
- 213   4                      sim_init();
- 214   4                      sms(NUMBER, "Clothes Released");
- 215   4                     
- 216   4      
- 217   4                      // LCD Module
- 218   4                      LCD_init();
- 219   4                      LCD_cmd(0x01);  // Clear display
- 220   4                      LCD_cmd(0xC0);
- 221   4                      LCD_string_write("Clothes Released");
- 222   4                      delay(50);
- 223   4                      LCD_cmd(0x01);  // Clear display
- 224   4                      LCD_off();
- 225   4                  }
- 226   3                  // Start 60-second timer and enter idle mode
- 227   3                  initTimer0();
- 228   3                  
- 229   3                  while (!timer_complete) {
- 230   4                      enterIdleMode();  // System will wake on timerinterrupt
- 231   4                    
- 232   4                  }
- 233   3                  
- 234   3                  // Display timer complete
- 235   3                  if (timer_complete) {
- 236   4                    LCD_init();
- 237   4                    LCD_cmd(0x01);  // Clear display
- 238   4                    LCD_cmd(0x80);
- 239   4                    LCD_string_write("Timer Complete!");
- 240   4                    delay(10);
-C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 06/20/2025 07:42:39 PAGE 5   
+ 179   3              }
+ 180   2          }
+ 181   1          
+ 182   1          // Ensure motor is stopped after PWM
+ 183   1          motor_stop();
+ 184   1      }
+ 185          
+ 186          // Function to set motor speed (0-100%)
+ 187          void set_motor_speed(unsigned char speed_percent)
+ 188          {
+ 189   1          if(speed_percent > 100) speed_percent = 100;
+ 190   1          if(speed_percent < 5) speed_percent = 5;  // Minimum 5% for ultra-gentle operation (was 10%)
+ 191   1          pwm_duty_cycle = speed_percent;
+ 192   1      }
+ 193          
+ 194          // Gradual start/stop function for ultra-smooth operation
+ 195          // direction: 1 = clockwise, 0 = anticlockwise
+ 196          void motor_gradual_start_stop(unsigned char direction, unsigned int duration_ms)
+ 197          {
+ 198   1          unsigned char original_speed = pwm_duty_cycle;
+ 199   1          unsigned char ramp_steps = 10;
+ 200   1          unsigned char i;
+ 201   1          unsigned int ramp_duration = duration_ms / 10; // 10% of total time for ramp up/down
+ 202   1          
+ 203   1          // Gradual start (ramp up)
+ 204   1          for(i = 5; i <= original_speed; i += (original_speed / ramp_steps))
+ 205   1          {
+ 206   2              set_motor_speed(i);
+ 207   2              if(direction == 1)
+ 208   2                  motor_pwm_clockwise(ramp_duration);
+ 209   2              else
+ 210   2                  motor_pwm_anticlockwise(ramp_duration);
+ 211   2          }
+ 212   1          
+ 213   1          // Run at target speed for main duration
+ 214   1          set_motor_speed(original_speed);
+ 215   1          if(direction == 1)
+ 216   1              motor_pwm_clockwise(duration_ms - (2 * ramp_duration * ramp_steps));
+ 217   1          else
+ 218   1              motor_pwm_anticlockwise(duration_ms - (2 * ramp_duration * ramp_steps));
+ 219   1          
+ 220   1          // Gradual stop (ramp down)
+ 221   1          for(i = original_speed; i >= 5; i -= (original_speed / ramp_steps))
+ 222   1          {
+ 223   2              set_motor_speed(i);
+ 224   2              if(direction == 1)
+ 225   2                  motor_pwm_clockwise(ramp_duration);
+ 226   2              else
+ 227   2                  motor_pwm_anticlockwise(ramp_duration);
+ 228   2              if(i <= 5) break; // Prevent underflow
+ 229   2          }
+ 230   1          
+ 231   1          motor_stop();
+ 232   1          set_motor_speed(original_speed); // Restore original speed setting
+ 233   1      }
+ 234          
+ 235          void initTimer0(void)
+ 236          {
+ 237   1          // Initialize Timer0 for 50ms intervals
+ 238   1          TMOD = (TMOD & 0xF0) | 0x01;  // Preserve Timer1 settings, set Timer0 to mode 1
+ 239   1          TH0 = 0x4B;     // Initial value for 50ms at 11.0592MHz
+ 240   1          TL0 = 0xFE;
+C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 07/31/2025 16:53:54 PAGE 5   
 
- 241   4                    LCD_cmd(0x01);  // Clear display
- 242   4                    LCD_off();
- 243   4                  }
- 244   3                  
- 245   3              }
- 246   2          }
- 247   1      }
- 248          
- 249          // GSM Module Function Declaration
- 250          void delay(unsigned int ms) {
- 251   1          unsigned int i, j;
- 252   1          for(i = 0; i < ms; i++)
- 253   1              for(j = 0; j < 1275; j++);
- 254   1        
- 255   1      }void sim_init()
- 256          {
- 257   1          SCON=0X50;    //0101 0000 
- 258   1          TMOD=0X20;      //FOR AUTO RELOAD MODE OF TIMER 1   0010 0000
- 259   1          TH1=0XFD; //FOR 9600 BAUD RATE OF THE MICROCONTROLLER
- 260   1          TL1=0XFD; //load the value of high time
- 261   1          TR1=1;  //START TIMER
- 262   1      }
- 263          
- 264          void tx(unsigned char send)
- 265          {
- 266   1          SBUF = send;
- 267   1          while(TI==0);
- 268   1          TI=0;   //reset the timer interrupt
- 269   1      
- 270   1      }
- 271          
- 272          void tx_string(unsigned char *s)
- 273          {
- 274   1          while(*s)
- 275   1              tx(*s++);
- 276   1      }
- 277          
- 278          void sms(unsigned char *num1, unsigned char *msg)
- 279          {
- 280   1          tx_string("AT");
- 281   1          tx(0x0d); 
- 282   1          //tx(0x0a);  // Try both CR and LF
- 283   1          delay(100);
- 284   1      
- 285   1          tx_string("AT+CMGF=1");
- 286   1          tx(0x0d); //tx(0x0a);
- 287   1          delay(100);
- 288   1        
- 289   1          tx_string("AT+CMGS=");
- 290   1          tx('"');
- 291   1          tx_string(num1);
- 292   1          tx('"');
- 293   1          tx(0x0d); 
- 294   1          delay(100); // Increase if needed
- 295   1      
- 296   1          // Ideally, wait here for '>' prompt from SIM800L
- 297   1      
- 298   1        tx_string(msg);
- 299   1          tx(0x1A); // CTRL+Z to send
- 300   1          delay(100); // Wait for SMS send to complete
- 301   1      }
- 302          
-C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 06/20/2025 07:42:39 PAGE 6   
+ 241   1          ET0 = 1;        // Enable Timer0interrupt
+ 242   1          timer_count_60sec = 0;
+ 243   1          timer_complete = 0;     // Reset the timer completion flag
+ 244   1          timer_running = 1;      // Set timer running flag
+ 245   1          TR0 = 1;        // Start timer
+ 246   1      }
+ 247          
+ 248          void enterIdleMode(void)
+ 249          {
+ 250   1          // Ensure interrupts are enabled before entering idle mode
+ 251   1          EA = 1;
+ 252   1          if (timer_running) {
+ 253   2              PCON |= 0x01;   // Enter idle mode only if timer is running
+ 254   2              // After this instruction, CPU operation is suspended until aninterrupt
+ 255   2              // When a timerinterrupt occurs, CPU wakes up and execution continues
+ 256   2              // from the next instruction after this function call
+ 257   2          }
+ 258   1      }
+ 259          
+ 260          void main()
+ 261          {
+ 262   1          // Initialize global interrupts
+ 263   1          EA = 1;
+ 264   1          
+ 265   1          // Initialize motor pins
+ 266   1          clock = 0;
+ 267   1          anticlock = 0;
+ 268   1          
+ 269   1          // Initial LCD display
+ 270   1          LCD_init();
+ 271   1          LCD_cmd(0x80);  // First line
+ 272   1          LCD_string_write("System Ready");
+ 273   1          delay(50);
+ 274   1          LCD_cmd(0x01);
+ 275   1          LCD_off();
+ 276   1          
+ 277   1          while(1) {
+ 278   2              if (rain_condition == 1) {  // It's not raining
+ 279   3                  
+ 280   3                  // Check rain sensors - more lenient detection (any sensor triggers)
+ 281   3                  if (R1 == 0 || R2 == 0 || R3 == 0) {
+ 282   4                      // Rain is detected
+ 283   4                      rain_condition = 0;
+ 284   4                      
+ 285   4                      LCD_init();
+ 286   4                      
+ 287   4                      LCD_cmd(0x80);  // First line
+ 288   4                      LCD_string_write("Rain Detected!");
+ 289   4                      delay(50);
+ 290   4                      LCD_cmd(0x01);  // Clear display
+ 291   4                      LCD_off();
+ 292   4      
+ 293   4                      // Retrieve clothes (rotate clockwise with PWM control)
+ 294   4                      set_motor_speed(25); // 25% speed for very gentle retrieval (reduced from 50%)
+ 295   4                      
+ 296   4                      LCD_init();
+ 297   4                      LCD_cmd(0x80);
+ 298   4                      LCD_string_write("Retrieving...");
+ 299   4                      LCD_cmd(0xC0);
+ 300   4                      LCD_string_write("Speed: 25%");
+ 301   4                      delay(30);
+ 302   4                      LCD_cmd(0x01);
+C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 07/31/2025 16:53:54 PAGE 6   
 
- 303          // LCD Module Function Declaration
- 304          
- 305          void LCD_off(void){
- 306   1      LCD_cmd(0x08);
- 307   1      }
- 308          void LCD_cmd(unsigned char command) {
- 309   1          LCD_data = command;
- 310   1          RS = 0;
- 311   1          RW = 0;
- 312   1          EN = 1;
- 313   1          delay(10);
- 314   1          EN = 0;
- 315   1      }
- 316          
- 317          void LCD_data_write(unsigned char dataa) {
- 318   1          LCD_data = dataa;
- 319   1          RS = 1;
- 320   1          RW = 0;
- 321   1          EN = 1;
- 322   1          EN = 0;
- 323   1      }
- 324          
- 325          void LCD_init(void) {
- 326   1          LCD_cmd(0x38); // 2-line, 5x7 font
- 327   1        delay(10);
- 328   1          LCD_cmd(0x0E); // Display ON, Cursor ON
- 329   1        delay(10);
- 330   1          LCD_cmd(0x01); // Clear display
- 331   1      }
- 332          
- 333          void LCD_string_write(unsigned char *string) {
- 334   1          while (*string != '\0') {
- 335   2              LCD_data_write(*string++);
- 336   2          }
- 337   1      }
+ 303   4                      LCD_off();
+ 304   4                      
+ 305   4                      motor_pwm_clockwise(1500); // Run for 1.5 seconds with PWM (reduced from 3 seconds)
+ 306   4                      
+ 307   4                      sim_init();
+ 308   4                      sms(NUMBER, "Clothes Retrieved");
+ 309   4                      
+ 310   4                      // LCD Module
+ 311   4                      LCD_init();
+ 312   4                      LCD_cmd(0xC0);  // Second line
+ 313   4                      LCD_string_write("Clothes Retrieved");
+ 314   4                      delay(50);
+ 315   4                      LCD_cmd(0x01);  // Clear display
+ 316   4                      LCD_off();
+ 317   4                  } else {
+ 318   4                      LCD_off();
+ 319   4                  }
+ 320   3                  
+ 321   3                  // Start 60-second timer and enter idle mode
+ 322   3                  initTimer0();
+ 323   3                  
+ 324   3                  while (!timer_complete) {
+ 325   4                      enterIdleMode();  // System enters low-power mode here
+ 326   4                      
+ 327   4                      // ? EXECUTION PAUSES HERE UNTIL AN INTERRUPT OCCURS ?
+ 328   4                      
+ 329   4                      // When Timer0 generates aninterrupt (every 50ms):
+ 330   4                      // 1. The CPU wakes up and executes timer0_isr()
+ 331   4                      // 2. After the ISR completes, execution CONTINUES FROM HERE
+ 332   4                      
+ 333   4                      // Loop returns to enterIdleMode() and CPU sleeps again
+ 334   4                  }
+ 335   3                  
+ 336   3                  // Display timer complete
+ 337   3                  if (timer_complete) {
+ 338   4                    LCD_init();
+ 339   4                    LCD_cmd(0x01);  // Clear display
+ 340   4                    LCD_cmd(0x80);
+ 341   4                    LCD_string_write("Timer Complete!");
+ 342   4                    delay(10);
+ 343   4                    LCD_cmd(0x01);  // Clear display
+ 344   4                    LCD_off();
+ 345   4                  }
+ 346   3                  
+ 347   3                  
+ 348   3              } else {  // It's raining
+ 349   3                  
+ 350   3                  
+ 351   3                  // Check rain sensors after timer completes
+ 352   3                  if (R1 == 1 || R2 == 1 || R3 == 1) {
+ 353   4                      // No rain detected
+ 354   4                      rain_condition = 1; // It's not raining now
+ 355   4      
+ 356   4                      // Release clothes (rotate anti-clockwise with PWM control)
+ 357   4                      set_motor_speed(20); // 20% speed for very gentle release (reduced from 40%)
+ 358   4                      
+ 359   4                      LCD_init();
+ 360   4                      LCD_cmd(0x80);
+ 361   4                      LCD_string_write("Releasing...");
+ 362   4                      LCD_cmd(0xC0);
+ 363   4                      LCD_string_write("Speed: 20%");
+ 364   4                      delay(30);
+C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 07/31/2025 16:53:54 PAGE 7   
+
+ 365   4                      LCD_cmd(0x01);
+ 366   4                      LCD_off();
+ 367   4                      
+ 368   4                      motor_pwm_anticlockwise(1200); // Run for 1.2 seconds with PWM (reduced from 2.5 seconds)
+ 369   4      
+ 370   4                      sim_init();
+ 371   4                      sms(NUMBER, "Clothes Released");
+ 372   4                     
+ 373   4      
+ 374   4                      // LCD Module
+ 375   4                      LCD_init();
+ 376   4                      LCD_cmd(0x01);  // Clear display
+ 377   4                      LCD_cmd(0xC0);
+ 378   4                      LCD_string_write("Clothes Released");
+ 379   4                      delay(50);
+ 380   4                      LCD_cmd(0x01);  // Clear display
+ 381   4                      LCD_off();
+ 382   4                  }
+ 383   3                  // Start 60-second timer and enter idle mode
+ 384   3                  initTimer0();
+ 385   3                  
+ 386   3                  while (!timer_complete) {
+ 387   4                      enterIdleMode();  // System will wake on timerinterrupt
+ 388   4                    
+ 389   4                  }
+ 390   3                  
+ 391   3                  // Display timer complete
+ 392   3                  if (timer_complete) {
+ 393   4                    LCD_init();
+ 394   4                    LCD_cmd(0x01);  // Clear display
+ 395   4                    LCD_cmd(0x80);
+ 396   4                    LCD_string_write("Timer Complete!");
+ 397   4                    delay(10);
+ 398   4                    LCD_cmd(0x01);  // Clear display
+ 399   4                    LCD_off();
+ 400   4                  }
+ 401   3                  
+ 402   3              }
+ 403   2          }
+ 404   1      }
+ 405          
+ 406          // GSM Module Function Declaration
+ 407          void delay(unsigned int ms) {
+ 408   1          unsigned int i, j;
+ 409   1          for(i = 0; i < ms; i++)
+ 410   1              for(j = 0; j < 1275; j++);
+ 411   1      }
+ 412          
+ 413          void sim_init()
+ 414          {
+ 415   1          SCON=0X50;    //0101 0000 
+ 416   1          TMOD=0X20;      //FOR AUTO RELOAD MODE OF TIMER 1   0010 0000
+ 417   1          TH1=0XFD; //FOR 9600 BAUD RATE OF THE MICROCONTROLLER
+ 418   1          TL1=0XFD; //load the value of high time
+ 419   1          TR1=1;  //START TIMER
+ 420   1      }
+ 421          
+ 422          void tx(unsigned char send)
+ 423          {
+ 424   1          SBUF = send;
+ 425   1          while(TI==0);
+ 426   1          TI=0;   //reset the timer interrupt
+C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 07/31/2025 16:53:54 PAGE 8   
+
+ 427   1      
+ 428   1      }
+ 429          
+ 430          void tx_string(unsigned char *s)
+ 431          {
+ 432   1          while(*s)
+ 433   1              tx(*s++);
+ 434   1      }
+ 435          
+ 436          void sms(unsigned char *num1, unsigned char *msg)
+ 437          {
+ 438   1          tx_string("AT");
+ 439   1          tx(0x0d); 
+ 440   1          //tx(0x0a);  // Try both CR and LF
+ 441   1          delay(100);
+ 442   1      
+ 443   1          tx_string("AT+CMGF=1");
+ 444   1          tx(0x0d); //tx(0x0a);
+ 445   1          delay(100);
+ 446   1        
+ 447   1          tx_string("AT+CMGS=");
+ 448   1          tx('"');
+ 449   1          tx_string(num1);
+ 450   1          tx('"');
+ 451   1          tx(0x0d); 
+ 452   1          delay(100); // Increase if needed
+ 453   1      
+ 454   1          // Ideally, wait here for '>' prompt from SIM800L
+ 455   1      
+ 456   1        tx_string(msg);
+ 457   1          tx(0x1A); // CTRL+Z to send
+ 458   1          delay(100); // Wait for SMS send to complete
+ 459   1      }
+ 460          
+ 461          // LCD Module Function Declaration
+ 462          
+ 463          void LCD_off(void){
+ 464   1      LCD_cmd(0x08);
+ 465   1      }
+ 466          void LCD_cmd(unsigned char command) {
+ 467   1          LCD_data = command;
+ 468   1          RS = 0;
+ 469   1          RW = 0;
+ 470   1          EN = 1;
+ 471   1          delay(10);
+ 472   1          EN = 0;
+ 473   1      }
+ 474          
+ 475          void LCD_data_write(unsigned char dataa) {
+ 476   1          LCD_data = dataa;
+ 477   1          RS = 1;
+ 478   1          RW = 0;
+ 479   1          EN = 1;
+ 480   1          EN = 0;
+ 481   1      }
+ 482          
+ 483          void LCD_init(void) {
+ 484   1          LCD_cmd(0x38); // 2-line, 5x7 font
+ 485   1        delay(10);
+ 486   1          LCD_cmd(0x0E); // Display ON, Cursor ON
+ 487   1        delay(10);
+ 488   1          LCD_cmd(0x01); // Clear display
+C51 COMPILER V9.60.7.0   REVISEDAQUASHIELD                                                 07/31/2025 16:53:54 PAGE 9   
+
+ 489   1      }
+ 490          
+ 491          void LCD_string_write(unsigned char *string) {
+ 492   1          while (*string != '\0') {
+ 493   2              LCD_data_write(*string++);
+ 494   2          }
+ 495   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE
-   CODE SIZE        =    787    ----
-   CONSTANT SIZE    =    116    ----
+   CODE SIZE        =   1241    ----
+   CONSTANT SIZE    =    165    ----
    XDATA SIZE       =   ----    ----
    PDATA SIZE       =   ----    ----
-   DATA SIZE        =      4      12
+   DATA SIZE        =      6      17
    IDATA SIZE       =   ----    ----
    BIT SIZE         =      2    ----
 END OF MODULE INFORMATION.

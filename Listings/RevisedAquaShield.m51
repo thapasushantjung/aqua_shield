@@ -1,4 +1,4 @@
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                    06/20/2025  07:42:40  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                    07/31/2025  16:53:54  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22.4.0, INVOKED BY:
@@ -13,6 +13,8 @@ INPUT MODULES INCLUDED:
   .\Objects\RevisedAquaShield.obj (REVISEDAQUASHIELD)
   C:\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
   C:\KEIL_V5\C51\LIB\C51S.LIB (?C?CLDPTR)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?IMUL)
+  C:\KEIL_V5\C51\LIB\C51S.LIB (?C?UIDIV)
   C:\KEIL_V5\C51\LIB\C51S.LIB (?C?ULCMP)
   C:\KEIL_V5\C51\LIB\C51S.LIB (?C_INIT)
 
@@ -26,8 +28,9 @@ LINK MAP OF MODULE:  .\Objects\RevisedAquaShield (REVISEDAQUASHIELD)
             * * * * * * *   D A T A   M E M O R Y   * * * * * * *
             REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
             DATA    0008H     0009H     UNIT         _DATA_GROUP_
-            DATA    0011H     0004H     UNIT         ?DT?REVISEDAQUASHIELD
-                    0015H     000BH                  *** GAP ***
+            DATA    0011H     0006H     UNIT         ?DT?REVISEDAQUASHIELD
+            DATA    0017H     0005H     UNIT         ?DT?_MOTOR_GRADUAL_START_STOP?REVISEDAQUASHIELD
+                    001CH     0004H                  *** GAP ***
             BIT     0020H.0   0000H.2   UNIT         ?BI?REVISEDAQUASHIELD
                     0020H.2   0000H.6                *** GAP ***
             IDATA   0021H     0001H     UNIT         ?STACK
@@ -37,30 +40,35 @@ LINK MAP OF MODULE:  .\Objects\RevisedAquaShield (REVISEDAQUASHIELD)
                     0003H     0008H                  *** GAP ***
             CODE    000BH     0003H     ABSOLUTE     
                     000EH     07F2H                  *** GAP ***
-            CODE    0800H     0136H     UNIT         ?PR?MAIN?REVISEDAQUASHIELD
-            CODE    0936H     008CH     UNIT         ?C_C51STARTUP
-            CODE    09C2H     007DH     UNIT         ?PR?TIMER0_ISR?REVISEDAQUASHIELD
-            CODE    0A3FH     0074H     UNIT         ?CO?REVISEDAQUASHIELD
-            CODE    0AB3H     006DH     UNIT         ?PR?_SMS?REVISEDAQUASHIELD
-            CODE    0B20H     002BH     UNIT         ?PR?_LCD_STRING_WRITE?REVISEDAQUASHIELD
-            CODE    0B4BH     002AH     UNIT         ?C?LIB_CODE
-            CODE    0B75H     0027H     UNIT         ?PR?_DELAY?REVISEDAQUASHIELD
-            CODE    0B9CH     0025H     UNIT         ?PR?_TX_STRING?REVISEDAQUASHIELD
-            CODE    0BC1H     0020H     UNIT         ?PR?INITTIMER0?REVISEDAQUASHIELD
-            CODE    0BE1H     000FH     UNIT         ?PR?SIM_INIT?REVISEDAQUASHIELD
-            CODE    0BF0H     000FH     UNIT         ?PR?LCD_INIT?REVISEDAQUASHIELD
-            CODE    0BFFH     000EH     UNIT         ?PR?_LCD_CMD?REVISEDAQUASHIELD
-            CODE    0C0DH     000BH     UNIT         ?PR?_LCD_DATA_WRITE?REVISEDAQUASHIELD
-            CODE    0C18H     000BH     UNIT         ?C_INITSEG
-            CODE    0C23H     0009H     UNIT         ?PR?ENTERIDLEMODE?REVISEDAQUASHIELD
-            CODE    0C2CH     0008H     UNIT         ?PR?_TX?REVISEDAQUASHIELD
-            CODE    0C34H     0005H     UNIT         ?PR?MOTOR_CLOCKWISE?REVISEDAQUASHIELD
-            CODE    0C39H     0005H     UNIT         ?PR?MOTOR_ANTICLOCKWISE?REVISEDAQUASHIELD
-            CODE    0C3EH     0005H     UNIT         ?PR?MOTOR_STOP?REVISEDAQUASHIELD
-            CODE    0C43H     0005H     UNIT         ?PR?LCD_OFF?REVISEDAQUASHIELD
+            CODE    0800H     0196H     UNIT         ?PR?MAIN?REVISEDAQUASHIELD
+            CODE    0996H     00C0H     UNIT         ?PR?_MOTOR_GRADUAL_START_STOP?REVISEDAQUASHIELD
+            CODE    0A56H     00A5H     UNIT         ?CO?REVISEDAQUASHIELD
+            CODE    0AFBH     0091H     UNIT         ?C?LIB_CODE
+            CODE    0B8CH     008CH     UNIT         ?C_C51STARTUP
+            CODE    0C18H     007DH     UNIT         ?PR?TIMER0_ISR?REVISEDAQUASHIELD
+            CODE    0C95H     006DH     UNIT         ?PR?_SMS?REVISEDAQUASHIELD
+            CODE    0D02H     0046H     UNIT         ?PR?_MOTOR_PWM_CLOCKWISE?REVISEDAQUASHIELD
+            CODE    0D48H     0046H     UNIT         ?PR?_MOTOR_PWM_ANTICLOCKWISE?REVISEDAQUASHIELD
+            CODE    0D8EH     002BH     UNIT         ?PR?_LCD_STRING_WRITE?REVISEDAQUASHIELD
+            CODE    0DB9H     0027H     UNIT         ?PR?_DELAY?REVISEDAQUASHIELD
+            CODE    0DE0H     0025H     UNIT         ?PR?_TX_STRING?REVISEDAQUASHIELD
+            CODE    0E05H     0020H     UNIT         ?PR?INITTIMER0?REVISEDAQUASHIELD
+            CODE    0E25H     0013H     UNIT         ?PR?_SET_MOTOR_SPEED?REVISEDAQUASHIELD
+            CODE    0E38H     0011H     UNIT         ?C_INITSEG
+            CODE    0E49H     000FH     UNIT         ?PR?SIM_INIT?REVISEDAQUASHIELD
+            CODE    0E58H     000FH     UNIT         ?PR?LCD_INIT?REVISEDAQUASHIELD
+            CODE    0E67H     000EH     UNIT         ?PR?_LCD_CMD?REVISEDAQUASHIELD
+            CODE    0E75H     000BH     UNIT         ?PR?_LCD_DATA_WRITE?REVISEDAQUASHIELD
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 2
 
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/20/2025  07:42:40  PAGE 2
 
+            CODE    0E80H     0009H     UNIT         ?PR?ENTERIDLEMODE?REVISEDAQUASHIELD
+            CODE    0E89H     0008H     UNIT         ?PR?_TX?REVISEDAQUASHIELD
+            CODE    0E91H     0007H     UNIT         ?PR?PWM_DELAY?REVISEDAQUASHIELD
+            CODE    0E98H     0005H     UNIT         ?PR?MOTOR_CLOCKWISE?REVISEDAQUASHIELD
+            CODE    0E9DH     0005H     UNIT         ?PR?MOTOR_ANTICLOCKWISE?REVISEDAQUASHIELD
+            CODE    0EA2H     0005H     UNIT         ?PR?MOTOR_STOP?REVISEDAQUASHIELD
+            CODE    0EA7H     0005H     UNIT         ?PR?LCD_OFF?REVISEDAQUASHIELD
 
 
 
@@ -81,13 +89,13 @@ SEGMENT                                            DATA_GROUP
   +--> ?PR?_LCD_STRING_WRITE?REVISEDAQUASHIELD
   +--> ?PR?_DELAY?REVISEDAQUASHIELD
   +--> ?PR?LCD_OFF?REVISEDAQUASHIELD
-  +--> ?PR?MOTOR_CLOCKWISE?REVISEDAQUASHIELD
-  +--> ?PR?MOTOR_STOP?REVISEDAQUASHIELD
+  +--> ?PR?_SET_MOTOR_SPEED?REVISEDAQUASHIELD
+  +--> ?PR?_MOTOR_PWM_CLOCKWISE?REVISEDAQUAS...
   +--> ?PR?SIM_INIT?REVISEDAQUASHIELD
   +--> ?PR?_SMS?REVISEDAQUASHIELD
   +--> ?PR?INITTIMER0?REVISEDAQUASHIELD
   +--> ?PR?ENTERIDLEMODE?REVISEDAQUASHIELD
-  +--> ?PR?MOTOR_ANTICLOCKWISE?REVISEDAQUASH...
+  +--> ?PR?_MOTOR_PWM_ANTICLOCKWISE?REVISEDA...
 
 ?PR?LCD_INIT?REVISEDAQUASHIELD                   -----    -----
   +--> ?PR?_DELAY?REVISEDAQUASHIELD
@@ -103,14 +111,25 @@ SEGMENT                                            DATA_GROUP
 ?PR?LCD_OFF?REVISEDAQUASHIELD                    -----    -----
   +--> ?PR?_LCD_CMD?REVISEDAQUASHIELD
 
+?PR?_MOTOR_PWM_CLOCKWISE?REVISEDAQUAS...         -----    -----
+  +--> ?PR?PWM_DELAY?REVISEDAQUASHIELD
+  +--> ?PR?MOTOR_STOP?REVISEDAQUASHIELD
+
 ?PR?_SMS?REVISEDAQUASHIELD                       0008H    0006H
   +--> ?CO?REVISEDAQUASHIELD
   +--> ?PR?_TX_STRING?REVISEDAQUASHIELD
   +--> ?PR?_TX?REVISEDAQUASHIELD
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 3
+
+
   +--> ?PR?_DELAY?REVISEDAQUASHIELD
 
 ?PR?_TX_STRING?REVISEDAQUASHIELD                 000EH    0003H
   +--> ?PR?_TX?REVISEDAQUASHIELD
+
+?PR?_MOTOR_PWM_ANTICLOCKWISE?REVISEDA...         -----    -----
+  +--> ?PR?PWM_DELAY?REVISEDAQUASHIELD
+  +--> ?PR?MOTOR_STOP?REVISEDAQUASHIELD
 
 
 
@@ -119,9 +138,6 @@ SYMBOL TABLE OF MODULE:  .\Objects\RevisedAquaShield (REVISEDAQUASHIELD)
   VALUE           TYPE          NAME
   ----------------------------------
 
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/20/2025  07:42:40  PAGE 3
-
-
   -------         MODULE        REVISEDAQUASHIELD
   C:0000H         SYMBOL        _ICE_DUMMY_
   D:0080H         PUBLIC        P0
@@ -129,323 +145,480 @@ SYMBOL TABLE OF MODULE:  .\Objects\RevisedAquaShield (REVISEDAQUASHIELD)
   B:00B0H.2       PUBLIC        R1
   D:00B0H         PUBLIC        P3
   B:00B0H.3       PUBLIC        R2
-  C:09C2H         PUBLIC        timer0_isr
+  C:0C18H         PUBLIC        timer0_isr
   B:00B0H.4       PUBLIC        R3
   B:00A8H.7       PUBLIC        EA
   B:0020H.0       PUBLIC        timer_running
-  C:0C39H         PUBLIC        motor_anticlockwise
+  C:0E9DH         PUBLIC        motor_anticlockwise
   B:00A0H.3       PUBLIC        clock
-  C:0B7CH         PUBLIC        _delay
+  C:0DC0H         PUBLIC        _delay
   B:00B0H.5       PUBLIC        DebugPin
   B:00A0H.2       PUBLIC        EN
+  C:0D02H         PUBLIC        _motor_pwm_clockwise
   B:0098H.1       PUBLIC        TI
   B:00A0H.0       PUBLIC        RS
   C:0800H         PUBLIC        main
   B:00A0H.1       PUBLIC        RW
-  C:0C23H         PUBLIC        enterIdleMode
+  C:0E80H         PUBLIC        enterIdleMode
   D:0099H         PUBLIC        SBUF
   D:0087H         PUBLIC        PCON
   D:0098H         PUBLIC        SCON
   D:0011H         PUBLIC        timer_count_60sec
+  C:0996H         PUBLIC        _motor_gradual_start_stop
   D:0089H         PUBLIC        TMOD
+  D:0015H         PUBLIC        pwm_counter
   B:00A0H.4       PUBLIC        anticlock
+  C:0D48H         PUBLIC        _motor_pwm_anticlockwise
+  C:0E91H         PUBLIC        pwm_delay
   B:00A8H.1       PUBLIC        ET0
   B:0088H.5       PUBLIC        TF0
   D:008CH         PUBLIC        TH0
   D:008DH         PUBLIC        TH1
   D:008AH         PUBLIC        TL0
   D:008BH         PUBLIC        TL1
-  C:0AB9H         PUBLIC        _sms
+  C:0C9BH         PUBLIC        _sms
   B:0088H.4       PUBLIC        TR0
+  C:0E25H         PUBLIC        _set_motor_speed
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 4
+
+
   B:0088H.6       PUBLIC        TR1
   B:00B0H.7       PUBLIC        rain_condition
-  C:0C3EH         PUBLIC        motor_stop
-  C:0B26H         PUBLIC        _LCD_string_write
-  C:0C34H         PUBLIC        motor_clockwise
-  C:0C0DH         PUBLIC        _LCD_data_write
-  C:0BE1H         PUBLIC        sim_init
+  C:0EA2H         PUBLIC        motor_stop
+  C:0D94H         PUBLIC        _LCD_string_write
+  C:0E98H         PUBLIC        motor_clockwise
+  C:0E75H         PUBLIC        _LCD_data_write
+  C:0E49H         PUBLIC        sim_init
   B:0020H.1       PUBLIC        timer_complete
-  C:0B9CH         PUBLIC        _tx_string
-  C:0BFFH         PUBLIC        _LCD_cmd
-  C:0BF0H         PUBLIC        LCD_init
-  C:0BC1H         PUBLIC        initTimer0
-  C:0C2CH         PUBLIC        _tx
-  C:0C43H         PUBLIC        LCD_off
+  C:0DE0H         PUBLIC        _tx_string
+  C:0E67H         PUBLIC        _LCD_cmd
+  C:0E58H         PUBLIC        LCD_init
+  C:0E05H         PUBLIC        initTimer0
+  C:0E89H         PUBLIC        _tx
+  C:0EA7H         PUBLIC        LCD_off
+  D:0016H         PUBLIC        pwm_duty_cycle
   -------         PROC          TIMER0_ISR
-  C:09C2H         LINE#         57
-  C:09DFH         LINE#         59
-  C:09E1H         LINE#         62
-  C:09E4H         LINE#         63
-  C:09E7H         LINE#         64
-  C:09E9H         LINE#         67
-  C:09FEH         LINE#         68
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/20/2025  07:42:40  PAGE 4
-
-
-  C:0A12H         LINE#         69
-  C:0A14H         LINE#         70
-  C:0A16H         LINE#         71
-  C:0A18H         LINE#         72
-  C:0A24H         LINE#         73
-  C:0A24H         LINE#         74
+  C:0C18H         LINE#         66
+  C:0C35H         LINE#         68
+  C:0C37H         LINE#         71
+  C:0C3AH         LINE#         72
+  C:0C3DH         LINE#         73
+  C:0C3FH         LINE#         76
+  C:0C54H         LINE#         77
+  C:0C68H         LINE#         78
+  C:0C6AH         LINE#         79
+  C:0C6CH         LINE#         80
+  C:0C6EH         LINE#         81
+  C:0C7AH         LINE#         82
+  C:0C7AH         LINE#         83
   -------         ENDPROC       TIMER0_ISR
   -------         PROC          MOTOR_CLOCKWISE
-  C:0C34H         LINE#         78
-  C:0C34H         LINE#         79
-  C:0C34H         LINE#         80
-  C:0C36H         LINE#         81
-  C:0C38H         LINE#         82
+  C:0E98H         LINE#         87
+  C:0E98H         LINE#         88
+  C:0E98H         LINE#         89
+  C:0E9AH         LINE#         90
+  C:0E9CH         LINE#         91
   -------         ENDPROC       MOTOR_CLOCKWISE
   -------         PROC          MOTOR_ANTICLOCKWISE
-  C:0C39H         LINE#         84
-  C:0C39H         LINE#         85
-  C:0C39H         LINE#         86
-  C:0C3BH         LINE#         87
-  C:0C3DH         LINE#         88
+  C:0E9DH         LINE#         93
+  C:0E9DH         LINE#         94
+  C:0E9DH         LINE#         95
+  C:0E9FH         LINE#         96
+  C:0EA1H         LINE#         97
   -------         ENDPROC       MOTOR_ANTICLOCKWISE
   -------         PROC          MOTOR_STOP
-  C:0C3EH         LINE#         90
-  C:0C3EH         LINE#         91
-  C:0C3EH         LINE#         92
-  C:0C40H         LINE#         93
-  C:0C42H         LINE#         94
+  C:0EA2H         LINE#         99
+  C:0EA2H         LINE#         100
+  C:0EA2H         LINE#         101
+  C:0EA4H         LINE#         102
+  C:0EA6H         LINE#         103
   -------         ENDPROC       MOTOR_STOP
+  -------         PROC          PWM_DELAY
+  -------         DO            
+  D:0007H         SYMBOL        i
+  -------         ENDDO         
+  C:0E91H         LINE#         106
+  C:0E91H         LINE#         107
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 5
+
+
+  C:0E91H         LINE#         109
+  C:0E97H         LINE#         110
+  -------         ENDPROC       PWM_DELAY
+  -------         PROC          _MOTOR_PWM_CLOCKWISE
+  D:0006H         SYMBOL        duration_ms
+  -------         DO            
+  D:0002H         SYMBOL        cycle_count
+  D:0004H         SYMBOL        total_cycles
+  D:0006H         SYMBOL        on_time
+  D:0006H         SYMBOL        off_time
+  -------         ENDDO         
+  C:0D02H         LINE#         118
+  C:0D02H         LINE#         119
+  C:0D02H         LINE#         121
+  C:0D0BH         LINE#         125
+  C:0D15H         LINE#         126
+  C:0D15H         LINE#         128
+  C:0D17H         LINE#         129
+  C:0D19H         LINE#         132
+  C:0D21H         LINE#         133
+  C:0D21H         LINE#         134
+  C:0D24H         LINE#         135
+  C:0D27H         LINE#         138
+  C:0D29H         LINE#         139
+  C:0D2BH         LINE#         142
+  C:0D38H         LINE#         143
+  C:0D38H         LINE#         144
+  C:0D3BH         LINE#         145
+  C:0D3EH         LINE#         146
+  C:0D45H         LINE#         149
+  -------         ENDPROC       _MOTOR_PWM_CLOCKWISE
+  -------         PROC          _MOTOR_PWM_ANTICLOCKWISE
+  D:0006H         SYMBOL        duration_ms
+  -------         DO            
+  D:0002H         SYMBOL        cycle_count
+  D:0004H         SYMBOL        total_cycles
+  D:0006H         SYMBOL        on_time
+  D:0006H         SYMBOL        off_time
+  -------         ENDDO         
+  C:0D48H         LINE#         152
+  C:0D48H         LINE#         153
+  C:0D48H         LINE#         155
+  C:0D51H         LINE#         159
+  C:0D5BH         LINE#         160
+  C:0D5BH         LINE#         162
+  C:0D5DH         LINE#         163
+  C:0D5FH         LINE#         166
+  C:0D67H         LINE#         167
+  C:0D67H         LINE#         168
+  C:0D6AH         LINE#         169
+  C:0D6DH         LINE#         172
+  C:0D6FH         LINE#         173
+  C:0D71H         LINE#         176
+  C:0D7EH         LINE#         177
+  C:0D7EH         LINE#         178
+  C:0D81H         LINE#         179
+  C:0D84H         LINE#         180
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 6
+
+
+  C:0D8BH         LINE#         183
+  -------         ENDPROC       _MOTOR_PWM_ANTICLOCKWISE
+  -------         PROC          _SET_MOTOR_SPEED
+  D:0007H         SYMBOL        speed_percent
+  C:0E25H         LINE#         187
+  C:0E25H         LINE#         188
+  C:0E25H         LINE#         189
+  C:0E2DH         LINE#         190
+  C:0E35H         LINE#         191
+  C:0E37H         LINE#         192
+  -------         ENDPROC       _SET_MOTOR_SPEED
+  -------         PROC          _MOTOR_GRADUAL_START_STOP
+  D:0017H         SYMBOL        direction
+  D:0018H         SYMBOL        duration_ms
+  -------         DO            
+  D:001AH         SYMBOL        original_speed
+  D:001BH         SYMBOL        ramp_steps
+  D:0001H         SYMBOL        i
+  D:0082H         SYMBOL        ramp_duration
+  -------         ENDDO         
+  C:0996H         LINE#         196
+  C:099CH         LINE#         197
+  C:099CH         LINE#         198
+  C:099FH         LINE#         199
+  C:09A2H         LINE#         201
+  C:09B1H         LINE#         204
+  C:09B9H         LINE#         205
+  C:09B9H         LINE#         206
+  C:09BEH         LINE#         207
+  C:09C7H         LINE#         208
+  C:09CCH         LINE#         210
+  C:09CFH         LINE#         211
+  C:09D9H         LINE#         214
+  C:09DEH         LINE#         215
+  C:09E3H         LINE#         216
+  C:0A01H         LINE#         218
+  C:0A1DH         LINE#         221
+  C:0A25H         LINE#         222
+  C:0A25H         LINE#         223
+  C:0A2AH         LINE#         224
+  C:0A33H         LINE#         225
+  C:0A38H         LINE#         227
+  C:0A3BH         LINE#         228
+  C:0A41H         LINE#         229
+  C:0A4EH         LINE#         231
+  C:0A51H         LINE#         232
+  -------         ENDPROC       _MOTOR_GRADUAL_START_STOP
   -------         PROC          INITTIMER0
-  C:0BC1H         LINE#         96
-  C:0BC1H         LINE#         97
-  C:0BC1H         LINE#         99
-  C:0BC9H         LINE#         100
-  C:0BCCH         LINE#         101
-  C:0BCFH         LINE#         102
-  C:0BD1H         LINE#         103
-  C:0BDAH         LINE#         104
-  C:0BDCH         LINE#         105
-  C:0BDEH         LINE#         106
-  C:0BE0H         LINE#         107
+  C:0E05H         LINE#         235
+  C:0E05H         LINE#         236
+  C:0E05H         LINE#         238
+  C:0E0DH         LINE#         239
+  C:0E10H         LINE#         240
+  C:0E13H         LINE#         241
+  C:0E15H         LINE#         242
+  C:0E1EH         LINE#         243
+  C:0E20H         LINE#         244
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 7
+
+
+  C:0E22H         LINE#         245
+  C:0E24H         LINE#         246
   -------         ENDPROC       INITTIMER0
   -------         PROC          ENTERIDLEMODE
-  C:0C23H         LINE#         109
-  C:0C23H         LINE#         110
-  C:0C23H         LINE#         112
-  C:0C25H         LINE#         113
-  C:0C28H         LINE#         114
-  C:0C2BH         LINE#         118
-  C:0C2BH         LINE#         119
+  C:0E80H         LINE#         248
+  C:0E80H         LINE#         249
+  C:0E80H         LINE#         251
+  C:0E82H         LINE#         252
+  C:0E85H         LINE#         253
+  C:0E88H         LINE#         257
+  C:0E88H         LINE#         258
   -------         ENDPROC       ENTERIDLEMODE
   -------         PROC          MAIN
-  C:0800H         LINE#         121
-  C:0800H         LINE#         122
-  C:0800H         LINE#         124
-  C:0802H         LINE#         127
-  C:0804H         LINE#         128
-  C:0806H         LINE#         131
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/20/2025  07:42:40  PAGE 5
+  C:0800H         LINE#         260
+  C:0800H         LINE#         261
+  C:0800H         LINE#         263
+  C:0802H         LINE#         266
+  C:0804H         LINE#         267
+  C:0806H         LINE#         270
+  C:0809H         LINE#         271
+  C:080EH         LINE#         272
+  C:0817H         LINE#         273
+  C:0819H         LINE#         274
+  C:0819H         LINE#         275
+  C:081CH         LINE#         277
+  C:081CH         LINE#         278
+  C:0822H         LINE#         281
+  C:082EH         LINE#         283
+  C:0830H         LINE#         285
+  C:0833H         LINE#         287
+  C:0838H         LINE#         288
+  C:0841H         LINE#         289
+  C:0848H         LINE#         290
+  C:084DH         LINE#         291
+  C:0850H         LINE#         294
+  C:0855H         LINE#         296
+  C:0858H         LINE#         297
+  C:085DH         LINE#         298
+  C:0866H         LINE#         299
+  C:086BH         LINE#         300
+  C:0874H         LINE#         301
+  C:087BH         LINE#         302
+  C:0880H         LINE#         303
+  C:0883H         LINE#         305
+  C:088AH         LINE#         307
+  C:088DH         LINE#         308
+  C:0899H         LINE#         311
+  C:089CH         LINE#         312
+  C:08A1H         LINE#         313
+  C:08AAH         LINE#         314
+  C:08B1H         LINE#         315
+  C:08B6H         LINE#         316
+  C:08B6H         LINE#         317
+  C:08B8H         LINE#         318
+  C:08BBH         LINE#         319
+  C:08BBH         LINE#         322
+  C:08BEH         LINE#         324
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 8
 
 
-  C:0809H         LINE#         132
-  C:080EH         LINE#         133
-  C:0817H         LINE#         134
-  C:0819H         LINE#         135
-  C:0819H         LINE#         136
-  C:081CH         LINE#         138
-  C:081CH         LINE#         139
-  C:0822H         LINE#         142
-  C:082BH         LINE#         144
-  C:082DH         LINE#         146
-  C:0830H         LINE#         148
-  C:0835H         LINE#         149
-  C:083EH         LINE#         150
-  C:0845H         LINE#         151
-  C:084AH         LINE#         152
-  C:084DH         LINE#         155
-  C:0850H         LINE#         156
-  C:0857H         LINE#         157
-  C:085AH         LINE#         159
-  C:085DH         LINE#         160
-  C:0869H         LINE#         163
-  C:086CH         LINE#         164
-  C:0871H         LINE#         165
-  C:087AH         LINE#         166
-  C:0881H         LINE#         167
-  C:0886H         LINE#         168
-  C:0886H         LINE#         169
-  C:0888H         LINE#         170
-  C:088BH         LINE#         171
-  C:088BH         LINE#         174
-  C:088EH         LINE#         176
-  C:0891H         LINE#         177
-  C:0894H         LINE#         186
-  C:0896H         LINE#         189
-  C:0899H         LINE#         190
-  C:089CH         LINE#         191
-  C:08A1H         LINE#         192
-  C:08A6H         LINE#         193
-  C:08A9H         LINE#         194
-  C:08B0H         LINE#         195
-  C:08B5H         LINE#         196
-  C:08B8H         LINE#         197
-  C:08B8H         LINE#         200
-  C:08BBH         LINE#         204
-  C:08C4H         LINE#         206
-  C:08C6H         LINE#         209
-  C:08C9H         LINE#         210
-  C:08D0H         LINE#         211
-  C:08D3H         LINE#         213
-  C:08D6H         LINE#         214
-  C:08E2H         LINE#         218
-  C:08E5H         LINE#         219
-  C:08EAH         LINE#         220
-  C:08EFH         LINE#         221
-  C:08F8H         LINE#         222
-  C:08FFH         LINE#         223
-  C:0904H         LINE#         224
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/20/2025  07:42:40  PAGE 6
-
-
-  C:0907H         LINE#         225
-  C:0907H         LINE#         227
-  C:090AH         LINE#         229
-  C:090DH         LINE#         230
-  C:0910H         LINE#         232
-  C:0912H         LINE#         235
-  C:0918H         LINE#         236
-  C:091BH         LINE#         237
-  C:0920H         LINE#         238
-  C:0925H         LINE#         239
-  C:0928H         LINE#         240
-  C:092BH         LINE#         241
-  C:0930H         LINE#         242
-  C:0933H         LINE#         243
-  C:0933H         LINE#         245
-  C:0933H         LINE#         246
+  C:08C1H         LINE#         325
+  C:08C4H         LINE#         334
+  C:08C6H         LINE#         337
+  C:08CCH         LINE#         338
+  C:08CFH         LINE#         339
+  C:08D4H         LINE#         340
+  C:08D9H         LINE#         341
+  C:08DCH         LINE#         342
+  C:08E3H         LINE#         343
+  C:08E8H         LINE#         344
+  C:08EBH         LINE#         345
+  C:08EBH         LINE#         348
+  C:08EEH         LINE#         352
+  C:08F7H         LINE#         354
+  C:08F9H         LINE#         357
+  C:08FEH         LINE#         359
+  C:0901H         LINE#         360
+  C:0906H         LINE#         361
+  C:090FH         LINE#         362
+  C:0914H         LINE#         363
+  C:091DH         LINE#         364
+  C:0924H         LINE#         365
+  C:0929H         LINE#         366
+  C:092CH         LINE#         368
+  C:0933H         LINE#         370
+  C:0936H         LINE#         371
+  C:0942H         LINE#         375
+  C:0945H         LINE#         376
+  C:094AH         LINE#         377
+  C:094FH         LINE#         378
+  C:0958H         LINE#         379
+  C:095FH         LINE#         380
+  C:0964H         LINE#         381
+  C:0967H         LINE#         382
+  C:0967H         LINE#         384
+  C:096AH         LINE#         386
+  C:096DH         LINE#         387
+  C:0970H         LINE#         389
+  C:0972H         LINE#         392
+  C:0978H         LINE#         393
+  C:097BH         LINE#         394
+  C:0980H         LINE#         395
+  C:0985H         LINE#         396
+  C:0988H         LINE#         397
+  C:098BH         LINE#         398
+  C:0990H         LINE#         399
+  C:0993H         LINE#         400
+  C:0993H         LINE#         402
+  C:0993H         LINE#         403
   -------         ENDPROC       MAIN
-  C:0B78H         SYMBOL        L?0053
-  -------         PROC          L?0052
-  -------         ENDPROC       L?0052
-  C:0B78H         SYMBOL        L?0053
+  C:0DBCH         SYMBOL        L?0097
+  -------         PROC          L?0096
+  -------         ENDPROC       L?0096
+  C:0DBCH         SYMBOL        L?0097
   -------         PROC          _DELAY
   D:0006H         SYMBOL        ms
   -------         DO            
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 9
+
+
   D:0004H         SYMBOL        i
   D:0002H         SYMBOL        j
   -------         ENDDO         
-  C:0B7CH         LINE#         250
-  C:0B7CH         LINE#         252
-  C:0B86H         LINE#         253
-  C:0B9BH         LINE#         255
+  C:0DC0H         LINE#         407
+  C:0DC0H         LINE#         409
+  C:0DCAH         LINE#         410
+  C:0DDFH         LINE#         411
   -------         ENDPROC       _DELAY
   -------         PROC          SIM_INIT
-  C:0BE1H         LINE#         255
-  C:0BE1H         LINE#         256
-  C:0BE1H         LINE#         257
-  C:0BE4H         LINE#         258
-  C:0BE7H         LINE#         259
-  C:0BEAH         LINE#         260
-  C:0BEDH         LINE#         261
-  C:0BEFH         LINE#         262
+  C:0E49H         LINE#         413
+  C:0E49H         LINE#         414
+  C:0E49H         LINE#         415
+  C:0E4CH         LINE#         416
+  C:0E4FH         LINE#         417
+  C:0E52H         LINE#         418
+  C:0E55H         LINE#         419
+  C:0E57H         LINE#         420
   -------         ENDPROC       SIM_INIT
   -------         PROC          _TX
   D:0007H         SYMBOL        send
-  C:0C2CH         LINE#         264
-  C:0C2CH         LINE#         265
-  C:0C2CH         LINE#         266
-  C:0C2EH         LINE#         267
-  C:0C31H         LINE#         268
-  C:0C33H         LINE#         270
+  C:0E89H         LINE#         422
+  C:0E89H         LINE#         423
+  C:0E89H         LINE#         424
+  C:0E8BH         LINE#         425
+  C:0E8EH         LINE#         426
+  C:0E90H         LINE#         428
   -------         ENDPROC       _TX
   -------         PROC          _TX_STRING
   D:000EH         SYMBOL        s
-  C:0B9CH         LINE#         272
-  C:0BA2H         LINE#         273
-  C:0BA2H         LINE#         274
-  C:0BADH         LINE#         275
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/20/2025  07:42:40  PAGE 7
-
-
-  C:0BC0H         LINE#         276
+  C:0DE0H         LINE#         430
+  C:0DE6H         LINE#         431
+  C:0DE6H         LINE#         432
+  C:0DF1H         LINE#         433
+  C:0E04H         LINE#         434
   -------         ENDPROC       _TX_STRING
-  -------         PROC          L?0054
-  -------         ENDPROC       L?0054
+  -------         PROC          L?0098
+  -------         ENDPROC       L?0098
   -------         PROC          _SMS
   D:0008H         SYMBOL        num1
   D:000BH         SYMBOL        msg
-  C:0AB9H         LINE#         278
-  C:0ABFH         LINE#         279
-  C:0ABFH         LINE#         280
-  C:0AC8H         LINE#         281
-  C:0ACDH         LINE#         283
-  C:0AD4H         LINE#         285
-  C:0ADDH         LINE#         286
-  C:0AE2H         LINE#         287
-  C:0AE7H         LINE#         289
-  C:0AF0H         LINE#         290
-  C:0AF5H         LINE#         291
-  C:0AFEH         LINE#         292
-  C:0B03H         LINE#         293
-  C:0B08H         LINE#         294
-  C:0B0DH         LINE#         298
-  C:0B16H         LINE#         299
-  C:0B1BH         LINE#         300
+  C:0C9BH         LINE#         436
+  C:0CA1H         LINE#         437
+  C:0CA1H         LINE#         438
+  C:0CAAH         LINE#         439
+  C:0CAFH         LINE#         441
+  C:0CB6H         LINE#         443
+  C:0CBFH         LINE#         444
+  C:0CC4H         LINE#         445
+  C:0CC9H         LINE#         447
+  C:0CD2H         LINE#         448
+  C:0CD7H         LINE#         449
+  C:0CE0H         LINE#         450
+  C:0CE5H         LINE#         451
+  C:0CEAH         LINE#         452
+  C:0CEFH         LINE#         456
+  C:0CF8H         LINE#         457
+  C:0CFDH         LINE#         458
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 10
+
+
   -------         ENDPROC       _SMS
   -------         PROC          LCD_OFF
-  C:0C43H         LINE#         305
-  C:0C43H         LINE#         306
+  C:0EA7H         LINE#         463
+  C:0EA7H         LINE#         464
   -------         ENDPROC       LCD_OFF
   -------         PROC          _LCD_CMD
   D:0007H         SYMBOL        command
-  C:0BFFH         LINE#         308
-  C:0BFFH         LINE#         309
-  C:0C01H         LINE#         310
-  C:0C03H         LINE#         311
-  C:0C05H         LINE#         312
-  C:0C07H         LINE#         313
-  C:0C0AH         LINE#         314
-  C:0C0CH         LINE#         315
+  C:0E67H         LINE#         466
+  C:0E67H         LINE#         467
+  C:0E69H         LINE#         468
+  C:0E6BH         LINE#         469
+  C:0E6DH         LINE#         470
+  C:0E6FH         LINE#         471
+  C:0E72H         LINE#         472
+  C:0E74H         LINE#         473
   -------         ENDPROC       _LCD_CMD
   -------         PROC          _LCD_DATA_WRITE
   D:0007H         SYMBOL        dataa
-  C:0C0DH         LINE#         317
-  C:0C0DH         LINE#         318
-  C:0C0FH         LINE#         319
-  C:0C11H         LINE#         320
-  C:0C13H         LINE#         321
-  C:0C15H         LINE#         322
-  C:0C17H         LINE#         323
+  C:0E75H         LINE#         475
+  C:0E75H         LINE#         476
+  C:0E77H         LINE#         477
+  C:0E79H         LINE#         478
+  C:0E7BH         LINE#         479
+  C:0E7DH         LINE#         480
+  C:0E7FH         LINE#         481
   -------         ENDPROC       _LCD_DATA_WRITE
   -------         PROC          LCD_INIT
-  C:0BF0H         LINE#         325
-  C:0BF0H         LINE#         326
-  C:0BF2H         LINE#         327
-  C:0BF5H         LINE#         328
-  C:0BF7H         LINE#         329
-  C:0BFAH         LINE#         330
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/20/2025  07:42:40  PAGE 8
-
-
+  C:0E58H         LINE#         483
+  C:0E58H         LINE#         484
+  C:0E5AH         LINE#         485
+  C:0E5DH         LINE#         486
+  C:0E5FH         LINE#         487
+  C:0E62H         LINE#         488
   -------         ENDPROC       LCD_INIT
-  -------         PROC          L?0055
-  -------         ENDPROC       L?0055
+  -------         PROC          L?0099
+  -------         ENDPROC       L?0099
   -------         PROC          _LCD_STRING_WRITE
   D:0008H         SYMBOL        string
-  C:0B26H         LINE#         333
-  C:0B2CH         LINE#         334
-  C:0B37H         LINE#         335
-  C:0B48H         LINE#         336
-  C:0B4AH         LINE#         337
+  C:0D94H         LINE#         491
+  C:0D9AH         LINE#         492
+  C:0DA5H         LINE#         493
+  C:0DB6H         LINE#         494
+  C:0DB8H         LINE#         495
   -------         ENDPROC       _LCD_STRING_WRITE
   -------         ENDMOD        REVISEDAQUASHIELD
 
   -------         MODULE        ?C?CLDPTR
-  C:0B4BH         PUBLIC        ?C?CLDPTR
+  C:0AFBH         PUBLIC        ?C?CLDPTR
   -------         ENDMOD        ?C?CLDPTR
 
+  -------         MODULE        ?C?IMUL
+  C:0B14H         PUBLIC        ?C?IMUL
+  -------         ENDMOD        ?C?IMUL
+
+  -------         MODULE        ?C?UIDIV
+  C:0B26H         PUBLIC        ?C?UIDIV
+  -------         ENDMOD        ?C?UIDIV
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  07/31/2025  16:53:54  PAGE 11
+
+
+
   -------         MODULE        ?C?ULCMP
-  C:0B64H         PUBLIC        ?C?ULCMP
+  C:0B7BH         PUBLIC        ?C?ULCMP
   -------         ENDMOD        ?C?ULCMP
 
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?MOTOR_CLOCKWISE?REVISEDAQUASHIELD
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?MOTOR_ANTICLOCKWISE?REVISEDAQUASHIELD
+
+*** WARNING L16: UNCALLED SEGMENT, IGNORED FOR OVERLAY PROCESS
+    SEGMENT: ?PR?_MOTOR_GRADUAL_START_STOP?REVISEDAQUASHIELD
+
 ******************************************************************************
-* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0394H BYTE (44%) *
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0591H BYTE (69%) *
 ******************************************************************************
 
-Program Size: data=22.2 xdata=0 code=1102
-LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
+Program Size: data=29.2 xdata=0 code=1714
+LINK/LOCATE RUN COMPLETE.  3 WARNING(S),  0 ERROR(S)

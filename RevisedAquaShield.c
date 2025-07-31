@@ -9,9 +9,12 @@ sbit R2 = P3^3;
 sbit R3 = P3^4;
 
 //DC motor control bits
-
 sbit clock = P2^3;
 sbit anticlock = P2^4;
+
+// PWM variables for motor speed control
+unsigned char pwm_duty_cycle = 25; // 25% duty cycle for very gentle operation (reduced from 45%)
+unsigned char pwm_counter = 0;
 
 // LCD control bits
 sbit RS = P2^0;
@@ -41,6 +44,12 @@ void LCD_string_write(unsigned char *string);
 //Motor Initialization
 void motor_clockwise(void);
 void motor_anticlockwise(void);
+void motor_stop(void);
+void motor_pwm_clockwise(unsigned int duration_ms);
+void motor_pwm_anticlockwise(unsigned int duration_ms);
+void pwm_delay(void);
+void set_motor_speed(unsigned char speed_percent);
+void motor_gradual_start_stop(unsigned char direction, unsigned int duration_ms);
 	
 // Idle Mode Initialization
 void initTimer0(void);
@@ -93,6 +102,136 @@ void motor_stop(void)
     anticlock = 0;
 }
 
+// PWM delay function for motor speed control
+void pwm_delay(void)
+{
+    unsigned char i;
+    for(i = 0; i < 35; i++); // Increased delay for slower PWM timing (~35μs per cycle, was 20μs)
+}
+
+// PWM motor control functions
+// PWM Implementation:
+// - Creates variable speed control by switching motor ON/OFF rapidly
+// - Duty cycle determines average power delivered to motor
+// - Lower duty cycle = slower speed, gentler operation
+// - Prevents sudden jerks that could damage clothes
+void motor_pwm_clockwise(unsigned int duration_ms)
+{
+    unsigned int cycle_count;
+    unsigned int total_cycles = duration_ms / 2; // Each PWM cycle takes ~2ms
+    unsigned char on_time;
+    unsigned char off_time;
+    
+    for(cycle_count = 0; cycle_count < total_cycles; cycle_count++)
+    {
+        // PWM ON period (duty cycle)
+        clock = 1;
+        anticlock = 0;
+					
+        // ON time based on duty cycle
+        for(on_time = 0; on_time < pwm_duty_cycle; on_time++)
+        {
+            pwm_delay();
+        }
+        
+        // PWM OFF period
+        clock = 0;
+        anticlock = 0;
+        
+        // OFF time (100 - duty_cycle)
+        for(off_time = 0; off_time < (100 - pwm_duty_cycle); off_time++)
+        {
+            pwm_delay();
+        }
+    }
+    
+    // Ensure motor is stopped after PWM
+    motor_stop();
+}
+
+void motor_pwm_anticlockwise(unsigned int duration_ms)
+{
+    unsigned int cycle_count;
+    unsigned int total_cycles = duration_ms / 2; // Each PWM cycle takes ~2ms
+    unsigned char on_time;
+    unsigned char off_time;
+    
+    for(cycle_count = 0; cycle_count < total_cycles; cycle_count++)
+    {
+        // PWM ON period (duty cycle)
+        clock = 0;
+        anticlock = 1;
+        
+        // ON time based on duty cycle
+        for(on_time = 0; on_time < pwm_duty_cycle; on_time++)
+        {
+            pwm_delay();
+        }
+        
+        // PWM OFF period
+        clock = 0;
+        anticlock = 0;
+        
+        // OFF time (100 - duty_cycle)
+        for(off_time = 0; off_time < (100 - pwm_duty_cycle); off_time++)
+        {
+            pwm_delay();
+        }
+    }
+    
+    // Ensure motor is stopped after PWM
+    motor_stop();
+}
+
+// Function to set motor speed (0-100%)
+void set_motor_speed(unsigned char speed_percent)
+{
+    if(speed_percent > 100) speed_percent = 100;
+    if(speed_percent < 5) speed_percent = 5;  // Minimum 5% for ultra-gentle operation (was 10%)
+    pwm_duty_cycle = speed_percent;
+}
+
+// Gradual start/stop function for ultra-smooth operation
+// direction: 1 = clockwise, 0 = anticlockwise
+void motor_gradual_start_stop(unsigned char direction, unsigned int duration_ms)
+{
+    unsigned char original_speed = pwm_duty_cycle;
+    unsigned char ramp_steps = 10;
+    unsigned char i;
+    unsigned int ramp_duration = duration_ms / 10; // 10% of total time for ramp up/down
+    
+    // Gradual start (ramp up)
+    for(i = 5; i <= original_speed; i += (original_speed / ramp_steps))
+    {
+        set_motor_speed(i);
+        if(direction == 1)
+            motor_pwm_clockwise(ramp_duration);
+        else
+            motor_pwm_anticlockwise(ramp_duration);
+    }
+    
+    // Run at target speed for main duration
+    set_motor_speed(original_speed);
+    if(direction == 1)
+        motor_pwm_clockwise(duration_ms - (2 * ramp_duration * ramp_steps));
+    else
+        motor_pwm_anticlockwise(duration_ms - (2 * ramp_duration * ramp_steps));
+    
+    // Gradual stop (ramp down)
+    for(i = original_speed; i >= 5; i -= (original_speed / ramp_steps))
+    {
+        set_motor_speed(i);
+        if(direction == 1)
+            motor_pwm_clockwise(ramp_duration);
+        else
+            motor_pwm_anticlockwise(ramp_duration);
+        if(i <= 5) break; // Prevent underflow
+    }
+    
+    motor_stop();
+    set_motor_speed(original_speed); // Restore original speed setting
+}
+
 void initTimer0(void)
 {
     // Initialize Timer0 for 50ms intervals
@@ -143,20 +282,29 @@ void main()
                 // Rain is detected
                 rain_condition = 0;
                 
-							  LCD_init();
+                LCD_init();
                 
                 LCD_cmd(0x80);  // First line
                 LCD_string_write("Rain Detected!");
                 delay(50);
-								LCD_cmd(0x01);  // Clear display
-							  LCD_off();
+                LCD_cmd(0x01);  // Clear display
+                LCD_off();
 
-                // Retrieve clothes (rotate clockwise)
-                motor_clockwise();
-                delay(100);  // Run motor for 5 seconds - increased for visibility
-                motor_stop();
-
-							  sim_init();
+                // Retrieve clothes (rotate clockwise with PWM control)
+                set_motor_speed(25); // 25% speed for very gentle retrieval (reduced from 50%)
+                
+                LCD_init();
+                LCD_cmd(0x80);
+                LCD_string_write("Retrieving...");
+                LCD_cmd(0xC0);
+                LCD_string_write("Speed: 25%");
+                delay(30);
+                LCD_cmd(0x01);
+                LCD_off();
+                
+                motor_pwm_clockwise(1500); // Run for 1.5 seconds with PWM (reduced from 3 seconds)
+                
+                sim_init();
                 sms(NUMBER, "Clothes Retrieved");
                 
                 // LCD Module
@@ -201,14 +349,23 @@ void main()
             
             
             // Check rain sensors after timer completes
-            if (R1 == 1 && R2 == 1 && R3 == 1) {
+            if (R1 == 1 || R2 == 1 || R3 == 1) {
                 // No rain detected
                 rain_condition = 1; // It's not raining now
 
-                // Release clothes (rotate anti-clockwise)
-                motor_anticlockwise();
-                delay(100);  // Run motor for some time
-                motor_stop();
+                // Release clothes (rotate anti-clockwise with PWM control)
+                set_motor_speed(20); // 20% speed for very gentle release (reduced from 40%)
+                
+                LCD_init();
+                LCD_cmd(0x80);
+                LCD_string_write("Releasing...");
+                LCD_cmd(0xC0);
+                LCD_string_write("Speed: 20%");
+                delay(30);
+                LCD_cmd(0x01);
+                LCD_off();
+                
+                motor_pwm_anticlockwise(1200); // Run for 1.2 seconds with PWM (reduced from 2.5 seconds)
 
 								sim_init();
                 sms(NUMBER, "Clothes Released");
@@ -251,8 +408,9 @@ void delay(unsigned int ms) {
     unsigned int i, j;
     for(i = 0; i < ms; i++)
         for(j = 0; j < 1275; j++);
-	
-}void sim_init()
+}
+
+void sim_init()
 {
     SCON=0X50;    //0101 0000 
     TMOD=0X20;      //FOR AUTO RELOAD MODE OF TIMER 1   0010 0000
