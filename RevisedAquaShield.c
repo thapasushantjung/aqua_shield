@@ -302,7 +302,7 @@ void main()
                 LCD_cmd(0x01);
                 LCD_off();
                 
-                motor_pwm_clockwise(1500); // Run for 1.5 seconds with PWM (reduced from 3 seconds)
+                motor_pwm_clockwise(2250); // Run for 1.5 seconds with PWM (reduced from 3 seconds)
                 
                 sim_init();
                 sms(NUMBER, "Clothes Retrieved");
@@ -365,7 +365,7 @@ void main()
                 LCD_cmd(0x01);
                 LCD_off();
                 
-                motor_pwm_anticlockwise(1200); // Run for 1.2 seconds with PWM (reduced from 2.5 seconds)
+                motor_pwm_anticlockwise(2250); // Run for 1.2 seconds with PWM (reduced from 2.5 seconds)
 
 								sim_init();
                 sms(NUMBER, "Clothes Released");
